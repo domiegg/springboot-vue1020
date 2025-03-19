@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.WeifachulkiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.weifachulki_name as weifachulkiName
+        ,a.weifachulki_types as weifachulkiTypes
+        ,a.weifachulki_time as weifachulkiTime
+        ,a.weifachulki_video as weifachulkiVideo
+        ,a.weifachulki_money as weifachulkiMoney
+        ,a.yonghu_id as yonghuId
+        ,a.weifachulki_content as weifachulkiContent
+        ,a.weifachulki_status_types as weifachulkiStatusTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.WeifachulkiView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+
+        FROM weifachulki  a
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.weifachulkiName != '' and params.weifachulkiName != null and params.weifachulkiName != 'null' ">
+                and a.weifachulki_name like CONCAT('%',#{params.weifachulkiName},'%')
+            </if>
+            <if test="params.weifachulkiTypes != null and params.weifachulkiTypes != ''">
+                and a.weifachulki_types = #{params.weifachulkiTypes}
+            </if>
+            <if test=" params.weifachulkiTimeStart != '' and params.weifachulkiTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.weifachulki_time) >= UNIX_TIMESTAMP(#{params.weifachulkiTimeStart}) ]]>
+            </if>
+            <if test=" params.weifachulkiTimeEnd != '' and params.weifachulkiTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.weifachulki_time) <= UNIX_TIMESTAMP(#{params.weifachulkiTimeEnd}) ]]>
+            </if>
+            <if test=" params.weifachulkiVideo != '' and params.weifachulkiVideo != null and params.weifachulkiVideo != 'null' ">
+                and a.weifachulki_video like CONCAT('%',#{params.weifachulkiVideo},'%')
+            </if>
+            <if test="params.weifachulkiMoneyStart != null ">
+                <![CDATA[  and a.weifachulki_money >= #{params.weifachulkiMoneyStart}   ]]>
+            </if>
+            <if test="params.weifachulkiMoneyEnd != null ">
+                <![CDATA[  and a.weifachulki_money <= #{params.weifachulkiMoneyEnd}   ]]>
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test=" params.weifachulkiContent != '' and params.weifachulkiContent != null and params.weifachulkiContent != 'null' ">
+                and a.weifachulki_content like CONCAT('%',#{params.weifachulkiContent},'%')
+            </if>
+            <if test="params.weifachulkiStatusTypes != null and params.weifachulkiStatusTypes != ''">
+                and a.weifachulki_status_types = #{params.weifachulkiStatusTypes}
+            </if>
+
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>

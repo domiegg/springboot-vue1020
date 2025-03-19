@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JidongcheDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.jidongche_name as jidongcheName
+        ,a.jidongche_types as jidongcheTypes
+        ,a.jidongche_time as jidongcheTime
+        ,a.yonghu_id as yonghuId
+        ,a.jidongche_content as jidongcheContent
+        ,a.jidongche_yesno_types as jidongcheYesnoTypes
+        ,a.jidongche_yesno_text as jidongcheYesnoText
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.JidongcheView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+
+        FROM jidongche  a
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.jidongcheName != '' and params.jidongcheName != null and params.jidongcheName != 'null' ">
+                and a.jidongche_name like CONCAT('%',#{params.jidongcheName},'%')
+            </if>
+            <if test="params.jidongcheTypes != null and params.jidongcheTypes != ''">
+                and a.jidongche_types = #{params.jidongcheTypes}
+            </if>
+            <if test=" params.jidongcheTimeStart != '' and params.jidongcheTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.jidongche_time) >= UNIX_TIMESTAMP(#{params.jidongcheTimeStart}) ]]>
+            </if>
+            <if test=" params.jidongcheTimeEnd != '' and params.jidongcheTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.jidongche_time) <= UNIX_TIMESTAMP(#{params.jidongcheTimeEnd}) ]]>
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test=" params.jidongcheContent != '' and params.jidongcheContent != null and params.jidongcheContent != 'null' ">
+                and a.jidongche_content like CONCAT('%',#{params.jidongcheContent},'%')
+            </if>
+            <if test="params.jidongcheYesnoTypes != null and params.jidongcheYesnoTypes != ''">
+                and a.jidongche_yesno_types = #{params.jidongcheYesnoTypes}
+            </if>
+            <if test=" params.jidongcheYesnoText != '' and params.jidongcheYesnoText != null and params.jidongcheYesnoText != 'null' ">
+                and a.jidongche_yesno_text like CONCAT('%',#{params.jidongcheYesnoText},'%')
+            </if>
+
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
